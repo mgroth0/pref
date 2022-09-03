@@ -1,0 +1,15 @@
+{
+  "type" :         "matt.mstruct.bj.JVM_ONLYModule",
+  "dependencies" : [
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "cfg" :  "commonMainApi",
+	  "key" :  "kt-stdlib"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "cfg" :  "commonMainApi",
+	  "key" :  "kotlinx-serialization-json"
+	}
+  ]
+}
