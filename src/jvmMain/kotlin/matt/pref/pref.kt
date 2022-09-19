@@ -1,9 +1,5 @@
-@file:OptIn(InternalSerializationApi::class, ExperimentalSerializationApi::class)
-
 package matt.pref
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
@@ -13,6 +9,7 @@ import kotlin.reflect.KProperty
 abstract class PrefNodeBase {
   protected abstract fun string(defaultValue: String? = null): Any
   protected abstract fun int(defaultValue: Int? = null): Any
+  protected abstract fun bool(defaultValue: Boolean? = null): Any
 }
 
 open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
@@ -29,6 +26,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 
   override fun string(defaultValue: String?) = StringPrefProvider(defaultValue)
   override fun int(defaultValue: Int?) = IntPrefProvider(defaultValue)
+  override fun bool(defaultValue: Boolean?) = BoolPrefProvider(defaultValue)
 
   inner class ObjPrefProvider<T: Any>(
 	private val ser: KSerializer<T>, private val defaultValue: T? = null,
@@ -40,7 +38,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	}
   }
 
-  @OptIn(InternalSerializationApi::class) inner class ObjPref<T: Any>(
+  inner class ObjPref<T: Any>(
 	private val ser: KSerializer<T>, private val defaultValue: T? = null, val name: String? = null
   ) {
 
@@ -116,6 +114,33 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	}
   }
 
+
+  inner class BoolPrefProvider(private val defaultValue: Boolean? = null) {
+	operator fun provideDelegate(
+	  thisRef: Any?, prop: KProperty<*>
+	): BoolPref {
+	  return BoolPref(defaultValue = defaultValue, name = prop.name)
+	}
+
+  }
+
+  inner class BoolPref(private val defaultValue: Boolean? = null, val name: String? = null) {
+
+
+	/*i use my own implementation of defaults because java's implementation seems confusing*/
+	operator fun getValue(
+	  thisRef: Any?, property: KProperty<*>
+	) = if (name!! !in prefs.keys()) defaultValue else prefs.getBoolean(name, false)
+
+
+	operator fun setValue(
+	  thisRef: Any?, property: KProperty<*>, value: Boolean?
+	) {
+	  if (value == null) {
+		prefs.remove(name!!)
+	  } else prefs.putBoolean(name!!, value)
+	}
+  }
 
 }
 
