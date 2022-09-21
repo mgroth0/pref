@@ -46,7 +46,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	operator fun getValue(
 	  thisRef: Any?, property: KProperty<*>
 	): T? = if (name!! !in prefs.keys()) defaultValue else Json.decodeFromString(
-	  ser, prefs.get(name, null).also { println("got pref ${prefs}..${name}=${it}") }
+	  ser, prefs.get(name, null)/*.also { println("got pref ${prefs}..${name}=${it}") }*/
 	)
 
 
