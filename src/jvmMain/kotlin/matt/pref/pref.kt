@@ -27,120 +27,73 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   override fun string(defaultValue: String?) = StringPrefProvider(defaultValue)
   override fun int(defaultValue: Int?) = IntPrefProvider(defaultValue)
   override fun bool(defaultValue: Boolean?) = BoolPrefProvider(defaultValue)
+  abstract inner class Pref<T>(val name: String? = null, private val defaultValue: T? = null) {
+	/*i use my own implementation of defaults because java's implementation seems confusing*/
+	operator fun getValue(
+	  thisRef: Any?, property: KProperty<*>
+	): T? = if (name!! !in prefs.keys()) defaultValue else getFromNode()
+
+	abstract fun getFromNode(): T?
+	abstract fun putIntoNode(t: T)
+	operator fun setValue(
+	  thisRef: Any?, property: KProperty<*>, value: T?
+	) {
+	  if (value == null) {
+		prefs.remove(name!!).also { println("removed pref ${prefs}..${name}") }
+	  } else putIntoNode(value)
+	}
+  }
 
   inner class ObjPrefProvider<T: Any>(
 	private val ser: KSerializer<T>, private val defaultValue: T? = null,
   ) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	): ObjPref<T> {
-	  return ObjPref(ser = ser, defaultValue = defaultValue, name = prop.name)
-	}
+	) = ObjPref(ser = ser, defaultValue = defaultValue, name = prop.name)
   }
 
   inner class ObjPref<T: Any>(
-	private val ser: KSerializer<T>, private val defaultValue: T? = null, val name: String? = null
-  ) {
-
-	/*i use my own implementation of defaults because java's implementation seems confusing*/
-	operator fun getValue(
-	  thisRef: Any?, property: KProperty<*>
-	): T? = if (name!! !in prefs.keys()) defaultValue else Json.decodeFromString(
-	  ser, prefs.get(name, null)/*.also { println("got pref ${prefs}..${name}=${it}") }*/
-	)
-
-
-	operator fun setValue(
-	  thisRef: Any?, property: KProperty<*>, value: T?
-	) {
-	  if (value == null) {
-		prefs.remove(name!!).also { println("removed pref ${prefs}..${name}") }
-	  } else prefs.put(name!!, Json.encodeToString(ser, value))
-		.also { println("set pref ${prefs}..${name}=${value}") }
-	}
+	private val ser: KSerializer<T>, defaultValue: T? = null, name: String? = null
+  ): Pref<T>(name = name, defaultValue = defaultValue) {
+	override fun getFromNode() = Json.decodeFromString(ser, prefs.get(name, null))
+	override fun putIntoNode(t: T) =
+	  prefs.put(name!!, Json.encodeToString(ser, t)).also { println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class StringPrefProvider(private val defaultValue: String? = null) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	): StringPref {
-	  return StringPref(defaultValue = defaultValue, name = prop.name)
-	}
-
+	) = StringPref(defaultValue = defaultValue, name = prop.name)
   }
 
-  inner class StringPref(private val defaultValue: String? = null, val name: String? = null) {
-
-
-	/*i use my own implementation of defaults because java's implementation seems confusing*/
-	operator fun getValue(
-	  thisRef: Any?, property: KProperty<*>
-	): String? = if (name!! !in prefs.keys()) defaultValue else prefs.get(name, null)
-
-
-	operator fun setValue(
-	  thisRef: Any?, property: KProperty<*>, value: String?
-	) {
-	  if (value == null) {
-		prefs.remove(name!!)
-	  } else prefs.put(name!!, value)
-	}
+  inner class StringPref(defaultValue: String? = null, name: String? = null):
+	Pref<String>(name = name, defaultValue = defaultValue) {
+	override fun getFromNode(): String? = prefs.get(name, null)
+	override fun putIntoNode(t: String) = prefs.put(name!!, t)
   }
 
   inner class IntPrefProvider(private val defaultValue: Int? = null) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	): IntPref {
-	  return IntPref(defaultValue = defaultValue, name = prop.name)
-	}
-
+	) = IntPref(defaultValue = defaultValue, name = prop.name)
   }
 
-  inner class IntPref(private val defaultValue: Int? = null, val name: String? = null) {
-
-
-	/*i use my own implementation of defaults because java's implementation seems confusing*/
-	operator fun getValue(
-	  thisRef: Any?, property: KProperty<*>
-	) = if (name!! !in prefs.keys()) defaultValue else prefs.getInt(name, 0)
-
-
-	operator fun setValue(
-	  thisRef: Any?, property: KProperty<*>, value: Int?
-	) {
-	  if (value == null) {
-		prefs.remove(name!!)
-	  } else prefs.putInt(name!!, value)
-	}
+  inner class IntPref(defaultValue: Int? = null, name: String? = null):
+	Pref<Int>(name = name, defaultValue = defaultValue) {
+	override fun getFromNode() = prefs.getInt(name, 0)
+	override fun putIntoNode(t: Int) = prefs.putInt(name!!, t)
   }
-
 
   inner class BoolPrefProvider(private val defaultValue: Boolean? = null) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	): BoolPref {
-	  return BoolPref(defaultValue = defaultValue, name = prop.name)
-	}
-
+	) = BoolPref(defaultValue = defaultValue, name = prop.name)
   }
 
-  inner class BoolPref(private val defaultValue: Boolean? = null, val name: String? = null) {
-
-
-	/*i use my own implementation of defaults because java's implementation seems confusing*/
-	operator fun getValue(
-	  thisRef: Any?, property: KProperty<*>
-	) = if (name!! !in prefs.keys()) defaultValue else prefs.getBoolean(name, false)
-
-
-	operator fun setValue(
-	  thisRef: Any?, property: KProperty<*>, value: Boolean?
-	) {
-	  if (value == null) {
-		prefs.remove(name!!)
-	  } else prefs.putBoolean(name!!, value)
-	}
+  inner class BoolPref(defaultValue: Boolean? = null, name: String? = null):
+	Pref<Boolean>(name = name, defaultValue = defaultValue) {
+	override fun getFromNode() = prefs.getBoolean(name, false)
+	override fun putIntoNode(t: Boolean) = prefs.putBoolean(name!!, t)
   }
-
 }
 
