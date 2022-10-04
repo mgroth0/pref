@@ -27,6 +27,8 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   override fun string(defaultValue: String?) = StringPrefProvider(defaultValue)
   override fun int(defaultValue: Int?) = IntPrefProvider(defaultValue)
   override fun bool(defaultValue: Boolean?) = BoolPrefProvider(defaultValue)
+
+
   abstract inner class Pref<T>(val name: String? = null, private val defaultValue: T? = null) {
 	/*i use my own implementation of defaults because java's implementation seems confusing*/
 	operator fun getValue(
@@ -42,6 +44,22 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 		prefs.remove(name!!).also { println("removed pref ${prefs}..${name}") }
 	  } else putIntoNode(value)
 	}
+  }
+
+  inner class ObsObjPref<T: Any>(
+	private val ser: KSerializer<T>, val defaultValue: ()->T, val name: String? = null
+  ) {
+
+	operator fun getValue(
+	  thisRef: Any?, property: KProperty<*>
+	): T = if (name!! !in prefs.keys()) {
+	  defaultValue()
+	} else getFromNode()
+
+
+	fun getFromNode() = Json.decodeFromString(ser, prefs.get(name, null))
+	fun putIntoNode(t: T) =
+	  prefs.put(name!!, Json.encodeToString(ser, t)).also { println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class ObjPrefProvider<T: Any>(
