@@ -10,6 +10,11 @@
 	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
 	  "cfg" :  "commonMainApi",
 	  "key" :  "kotlinx-serialization-json"
+	},
+	{
+	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "cfg" :  "jvmMainApi",
+	  "path" : ":k:model"
 	}
   ]
 }

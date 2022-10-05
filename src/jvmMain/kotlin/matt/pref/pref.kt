@@ -3,10 +3,12 @@ package matt.pref
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import matt.model.del.Deletable
+import matt.model.tostringbuilder.toStringBuilder
 import java.util.prefs.Preferences
 import kotlin.reflect.KProperty
 
-abstract class PrefNodeBase {
+abstract class PrefNodeBase: Deletable {
   protected abstract fun string(defaultValue: String? = null): Any
   protected abstract fun int(defaultValue: Int? = null): Any
   protected abstract fun bool(defaultValue: Boolean? = null): Any
@@ -14,6 +16,20 @@ abstract class PrefNodeBase {
 
 open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   private val prefs: Preferences by lazy { Preferences.userRoot().node(key) }
+
+  private val myStr by lazy {
+	toStringBuilder(
+	  "key" to key
+	)
+  }
+
+  override fun toString() = myStr
+
+  override fun delete() {
+	prefs.removeNode()
+	prefs.flush()
+	println("deleted $this")
+  }
 
   init {
 	oldKeys.forEach {
