@@ -5,7 +5,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import matt.model.del.Deletable
 import matt.model.tostringbuilder.toStringBuilder
-import java.util.prefs.Preferences
+import matt.pref.safepref.SafePref
 import kotlin.reflect.KProperty
 
 abstract class PrefNodeBase: Deletable {
@@ -15,7 +15,9 @@ abstract class PrefNodeBase: Deletable {
 }
 
 open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
-  private val prefs: Preferences by lazy { Preferences.userRoot().node(key) }
+
+
+  private val prefs = SafePref(key)
 
   private val myStr by lazy {
 	toStringBuilder(
@@ -49,7 +51,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	/*i use my own implementation of defaults because java's implementation seems confusing*/
 	operator fun getValue(
 	  thisRef: Any?, property: KProperty<*>
-	): T? = if (name!! !in prefs.keys()) defaultValue else getFromNode()
+	) = if (name!! !in prefs.keys) defaultValue else getFromNode()
 
 	abstract fun getFromNode(): T?
 	abstract fun putIntoNode(t: T)
@@ -68,7 +70,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 
 	operator fun getValue(
 	  thisRef: Any?, property: KProperty<*>
-	): T = if (name!! !in prefs.keys()) {
+	): T = if (name!! !in prefs.keys) {
 	  defaultValue()
 	} else getFromNode()
 
