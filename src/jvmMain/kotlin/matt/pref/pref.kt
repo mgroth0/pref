@@ -3,8 +3,8 @@ package matt.pref
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
-import matt.model.del.Deletable
-import matt.model.tostringbuilder.toStringBuilder
+import matt.model.obj.del.Deletable
+import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.pref.safepref.SafePref
 import kotlin.reflect.KProperty
 
