@@ -34,4 +34,22 @@ class SafePref(val key: String) {
   fun removeNode() = prefs.removeNode()
   fun flush() = prefs.flush()
   fun remove(key: String) = prefs.remove(key)
+
+  inline fun <reified R> getReified(name: String, default: R): R {
+	return when (default) {
+	  is String? -> get(name, default)
+	  is Int     -> getInt(name, default)
+	  is Boolean -> getBoolean(name, default)
+	  else       -> error("tried to get $default from pref node?")
+	} as R
+  }
+
+  inline fun <reified R> putBool(name: String, value: R) {
+	when (value) {
+	  is String  -> put(name, value)
+	  is Int     -> putInt(name, value)
+	  is Boolean -> putBoolean(name, value)
+	  else       -> error("tried to put $value into pref node?")
+	} as R
+  }
 }
