@@ -22,9 +22,20 @@ abstract class ObsPrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   override fun bool(defaultValue: Boolean?) = BoolObsPrefProvider(defaultValue)
 
   private val prefNode by lazy { PrefNode(key, oldKeys) }
-  override fun delete() = prefNode.delete()
+
+  private val prefs = mutableSetOf<ObsPref<*>>()
+
+  override fun delete() {
+	prefNode.delete()
+	prefs.forEach {
+	  it.reset()
+	}
+  }
 
   protected abstract inner class ObsPref<T> {
+	init {
+	  prefs += this
+	}
 	protected abstract var pref: T?
 	private val obsProp by lazy {
 	  BindableProperty(pref).apply {
@@ -32,6 +43,10 @@ abstract class ObsPrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 		  pref = it
 		}
 	  }
+	}
+
+	fun reset() {
+	  obsProp.value = pref
 	}
 
 	operator fun getValue(
