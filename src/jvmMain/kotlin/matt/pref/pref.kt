@@ -53,7 +53,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 
 
   abstract inner class Pref<T>(val name: String? = null, protected val defaultValue: T? = null):
-	ReadWriteProperty<Any?, T?> {
+	  ReadWriteProperty<Any?, T?> {
 	/*i use my own implementation of defaults because java's implementation seems confusing*/
 	override operator fun getValue(
 	  thisRef: Any?, property: KProperty<*>
@@ -67,6 +67,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	  if (value == null) {
 		prefs.remove(name!!).also { println("removed pref ${prefs}..${name}") }
 	  } else putIntoNode(value)
+	  prefs.flush()
 	}
   }
 
@@ -117,21 +118,23 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   }
 
   inner class StringPref(defaultValue: String? = null, name: String? = null):
-	Pref<String>(name = name, defaultValue = defaultValue) {
+	  Pref<String>(name = name, defaultValue = defaultValue) {
 	override fun getFromNode(): String? = prefs.get(name, defaultValue)
 	override fun putIntoNode(t: String) = prefs.put(name!!, t)
   }
 
   inner class IntPref(defaultValue: Int? = null, name: String? = null):
-	Pref<Int>(name = name, defaultValue = defaultValue) {
+	  Pref<Int>(name = name, defaultValue = defaultValue) {
 	override fun getFromNode() = prefs.getInt(name, defaultValue ?: 0)
 	override fun putIntoNode(t: Int) = prefs.putInt(name!!, t)
   }
 
   inner class BoolPref(defaultValue: Boolean? = null, name: String? = null):
-	Pref<Boolean>(name = name, defaultValue = defaultValue) {
+	  Pref<Boolean>(name = name, defaultValue = defaultValue) {
 	override fun getFromNode() = prefs.getBoolean(name, defaultValue ?: false)
-	override fun putIntoNode(t: Boolean) = prefs.putBoolean(name!!, t)
+	override fun putIntoNode(t: Boolean) {
+	  prefs.putBoolean(name!!, t)
+	}
   }
 }
 
