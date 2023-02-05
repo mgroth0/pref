@@ -12,8 +12,8 @@ import kotlin.reflect.KProperty
 
 abstract class ObsPrefNode(
   key: String,
-  oldNames: List<String>,
-  oldKeys: List<String>
+  oldNames: List<String> = listOf(),
+  oldKeys: List<String> = listOf()
 ): PrefNodeBase() {
 
   init {
