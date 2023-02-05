@@ -6,10 +6,26 @@ import matt.obs.MObservable
 import matt.obs.prop.BindableProperty
 import matt.pref.PrefNode
 import matt.pref.PrefNodeBase
+import java.util.prefs.Preferences
+import kotlin.concurrent.thread
 import kotlin.reflect.KProperty
 
-abstract class ObsPrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
+abstract class ObsPrefNode(
+  key: String,
+  oldNames: List<String>,
+  oldKeys: List<String>
+): PrefNodeBase() {
 
+  init {
+	thread(isDaemon = true) {
+	  oldNames.forEach {
+		Preferences.userRoot().node(it).apply {
+		  removeNode()
+		  flush()
+		}
+	  }
+	}
+  }
 
   protected inline fun <reified T: Any> obj(defaultValue: T? = null) =
 	ObjObsPrefProvider(T::class.serializer(), defaultValue)
