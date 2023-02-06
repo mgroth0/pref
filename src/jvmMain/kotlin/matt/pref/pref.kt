@@ -90,8 +90,8 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	  defaultValue()
 	}
 
-	fun putIntoNode(t: T) =
-	  prefs.put(name!!, Json.encodeToString(ser, t)).also { println("set pref ${prefs}..${name}=${t}") }
+	fun putIntoNode(t: T, silent: Boolean = false) =
+	  prefs.put(name!!, Json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class ObjPrefProvider<T: Any>(
@@ -99,11 +99,11 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
   ) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	) = ObjPref(ser = ser, defaultValue = defaultValue, name = prop.name)
+	) = ObjPref(ser = ser, defaultValue = defaultValue, name = prop.name, silent = false)
   }
 
   inner class ObjPref<T: Any>(
-	private val ser: KSerializer<T>, defaultValue: T? = null, name: String? = null
+	private val ser: KSerializer<T>, defaultValue: T? = null, name: String? = null, val silent: Boolean
   ): Pref<T>(name = name, defaultValue = defaultValue) {
 	override fun getFromNode() = try {
 	  Json.decodeFromString(ser, prefs.get(name, null))
@@ -114,7 +114,7 @@ open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
 	}
 
 	override fun putIntoNode(t: T) =
-	  prefs.put(name!!, Json.encodeToString(ser, t)).also { println("set pref ${prefs}..${name}=${t}") }
+	  prefs.put(name!!, Json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class StringPref(defaultValue: String? = null, name: String? = null):

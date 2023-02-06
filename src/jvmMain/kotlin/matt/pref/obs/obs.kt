@@ -27,8 +27,8 @@ abstract class ObsPrefNode(
 	}
   }
 
-  protected inline fun <reified T: Any> obj(defaultValue: T? = null) =
-	ObjObsPrefProvider(T::class.serializer(), defaultValue)
+  protected inline fun <reified T: Any> obj(defaultValue: T? = null, silent: Boolean = false) =
+	ObjObsPrefProvider(T::class.serializer(), defaultValue, silent = silent)
 
   protected inline fun <reified T: MObservable> obsObj(noinline defaultValue: ()->T) =
 	ObsObjObsPrefProvider(T::class.serializer(), defaultValue)
@@ -52,6 +52,7 @@ abstract class ObsPrefNode(
 	init {
 	  prefs += this
 	}
+
 	protected abstract var pref: T?
 	private val obsProp by lazy {
 	  BindableProperty(pref).apply {
@@ -98,14 +99,19 @@ abstract class ObsPrefNode(
   }
 
 
-  protected inner class ObjObsPrefProvider<T: Any>(val ser: KSerializer<T>, private val defaultValue: T? = null) {
+  protected inner class ObjObsPrefProvider<T: Any>(
+	val ser: KSerializer<T>,
+	private val defaultValue: T? = null,
+	val silent: Boolean
+  ) {
 	operator fun provideDelegate(
 	  thisRef: Any?, prop: KProperty<*>
-	) = ObjObsPref(ser, defaultValue, prop.name)
+	) = ObjObsPref(ser, defaultValue, prop.name, silent = silent)
   }
 
-  protected inner class ObjObsPref<T: Any>(ser: KSerializer<T>, defaultValue: T? = null, key: String): ObsPref<T>() {
-	override var pref by prefNode.ObjPref(ser, defaultValue, key)
+  protected inner class ObjObsPref<T: Any>(ser: KSerializer<T>, defaultValue: T? = null, key: String, silent: Boolean):
+	  ObsPref<T>() {
+	override var pref by prefNode.ObjPref(ser, defaultValue, key,silent=silent)
   }
 
   protected inner class StringObsPrefProvider(private val defaultValue: String? = null) {
