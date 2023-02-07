@@ -8,8 +8,8 @@ import matt.lang.delegation.provider
 import matt.log.warn.warn
 import matt.model.code.errreport.printReport
 import matt.model.obj.del.Deletable
-import matt.model.obj.tostringbuilder.toStringBuilder
 import matt.pref.safepref.SafePref
+import matt.reflect.tostring.toStringBuilder
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
