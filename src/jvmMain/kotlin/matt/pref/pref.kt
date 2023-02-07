@@ -9,7 +9,6 @@ import matt.log.warn.warn
 import matt.model.code.errreport.printReport
 import matt.model.obj.del.Deletable
 import matt.pref.safepref.SafePref
-import matt.reflect.tostring.toStringBuilder
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -19,18 +18,18 @@ abstract class PrefNodeBase: Deletable {
   protected abstract fun bool(defaultValue: Boolean? = null): Any
 }
 
-open class PrefNode(key: String, oldKeys: List<String>): PrefNodeBase() {
+open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBase() {
 
 
   private val prefs = SafePref(key)
 
-  private val myStr by lazy {
-	toStringBuilder(
-	  "key" to key
-	)
-  }
+  //  private val myStr by lazy {
+  //	toStringBuilder(
+  //	  "key" to key
+  //	)
+  //  }
 
-  override fun toString() = myStr
+  override fun toString() = "${this::class.simpleName}[key=$key]"
 
   override fun delete() {
 	prefs.removeNode()
