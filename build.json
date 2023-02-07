@@ -3,12 +3,12 @@
   "jvm" :          {},
   "dependencies" : [
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonLibDependency",
+	  "type" : "Lib",
 	  "cfg" :  "commonMainApi",
 	  "key" :  "kt-stdlib"
 	},
 	{
-	  "type" : "matt.mstruct.bj.BuildJsonProjectDependency",
+	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
 	  "path" : ":k:obs"
 	}
