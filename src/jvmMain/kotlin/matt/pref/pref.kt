@@ -18,7 +18,7 @@ abstract class PrefNodeBase: Deletable {
   protected abstract fun bool(defaultValue: Boolean? = null): Any
 }
 
-open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBase() {
+open class PrefNode(private val key: String, oldKeys: List<String>, val json: Json = Json): PrefNodeBase() {
 
 
   private val prefs = SafePref(key)
@@ -74,15 +74,17 @@ open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBas
 	private val ser: KSerializer<T>, val defaultValue: ()->T, val name: String? = null
   ) {
 
-	operator fun getValue(
-	  thisRef: Any?, property: KProperty<*>
-	): T = if (name!! !in prefs.keys) {
+	fun get() = if (name!! !in prefs.keys) {
 	  defaultValue()
 	} else getFromNode()
 
+	operator fun getValue(
+	  thisRef: Any?, property: KProperty<*>
+	): T = get()
+
 
 	fun getFromNode() = try {
-	  Json.decodeFromString(ser, prefs.get(name, null))
+	  json.decodeFromString(ser, prefs.get(name, null))
 	} catch (e: SerializationException) {
 	  warn("got $e when trying to load preference node \"$name\"")
 	  e.printReport()
@@ -90,7 +92,7 @@ open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBas
 	}
 
 	fun putIntoNode(t: T, silent: Boolean = false) =
-	  prefs.put(name!!, Json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+	  prefs.put(name!!, json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class ObjPrefProvider<T: Any>(
@@ -105,7 +107,7 @@ open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBas
 	private val ser: KSerializer<T>, defaultValue: T? = null, name: String? = null, val silent: Boolean
   ): Pref<T>(name = name, defaultValue = defaultValue) {
 	override fun getFromNode() = try {
-	  Json.decodeFromString(ser, prefs.get(name, null))
+	  json.decodeFromString(ser, prefs.get(name, null))
 	} catch (e: SerializationException) {
 	  warn("got $e when trying to load preference node \"$name\"")
 	  e.printReport()
@@ -113,7 +115,7 @@ open class PrefNode(private val key: String, oldKeys: List<String>): PrefNodeBas
 	}
 
 	override fun putIntoNode(t: T) =
-	  prefs.put(name!!, Json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+	  prefs.put(name!!, json.encodeToString(ser, t)).also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
   }
 
   inner class StringPref(defaultValue: String? = null, name: String? = null):

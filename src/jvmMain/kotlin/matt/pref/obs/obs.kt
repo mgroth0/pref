@@ -1,6 +1,7 @@
 package matt.pref.obs
 
 import kotlinx.serialization.KSerializer
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import matt.obs.MObservable
 import matt.obs.prop.BindableProperty
@@ -13,7 +14,8 @@ import kotlin.reflect.KProperty
 abstract class ObsPrefNode(
   key: String,
   oldNames: List<String> = listOf(),
-  oldKeys: List<String> = listOf()
+  oldKeys: List<String> = listOf(),
+  json: Json = Json
 ): PrefNodeBase() {
 
   init {
@@ -37,7 +39,7 @@ abstract class ObsPrefNode(
   override fun int(defaultValue: Int?) = IntObsPrefProvider(defaultValue)
   override fun bool(defaultValue: Boolean?) = BoolObsPrefProvider(defaultValue)
 
-  private val prefNode by lazy { PrefNode(key, oldKeys) }
+  private val prefNode by lazy { PrefNode(key, oldKeys, json) }
 
   private val prefs = mutableSetOf<ObsPref<*>>()
 
@@ -47,6 +49,7 @@ abstract class ObsPrefNode(
 	  it.reset()
 	}
   }
+
 
   protected abstract inner class ObsPref<T> {
 	init {
@@ -81,21 +84,43 @@ abstract class ObsPrefNode(
   }
 
   protected inner class ObsObjObsPref<T: MObservable>(ser: KSerializer<T>, defaultValue: ()->T, key: String) {
-	private val thePref = prefNode.ObsObjPref(ser, defaultValue, key)
-	private val pref by thePref
-	private val obsObj = pref /*critical*/
 
-	init {
-	  println("setting up pref observer")
-	  obsObj.observe {
-		println("saving ObsObjobsPref")
-		thePref.putIntoNode(obsObj)
+
+	private val thePref = prefNode.ObsObjPref(ser, defaultValue, key)
+	private val obsObj by lazy {
+	  thePref.get().apply {
+		observe {
+		  println("saving ObsObjobsPref")
+		  save()
+		}
 	  }
+	}
+
+
+	/*	private val obsObj by lazy {
+		  println("setting up pref $pref observer with key $key")
+		  pref.observe {
+			println("saving ObsObjobsPref")
+			save()
+		  }
+		  pref
+		}*/
+
+	/*init {
+
+	  obsObj
+	}*/
+
+	fun save() {
+	  thePref.putIntoNode(obsObj)
 	}
 
 	operator fun getValue(
 	  thisRef: Any?, property: KProperty<*>
-	): T = obsObj
+	): T {
+	  println("returning obsObj")
+	  return obsObj
+	}
   }
 
 
@@ -111,7 +136,7 @@ abstract class ObsPrefNode(
 
   protected inner class ObjObsPref<T: Any>(ser: KSerializer<T>, defaultValue: T? = null, key: String, silent: Boolean):
 	  ObsPref<T>() {
-	override var pref by prefNode.ObjPref(ser, defaultValue, key,silent=silent)
+	override var pref by prefNode.ObjPref(ser, defaultValue, key, silent = silent)
   }
 
   protected inner class StringObsPrefProvider(private val defaultValue: String? = null) {
