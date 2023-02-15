@@ -41,7 +41,7 @@ abstract class ObsPrefNode(
 
   private val prefNode by lazy { PrefNode(key, oldKeys, json) }
 
-  private val prefs = mutableSetOf<ObsPref<*>>()
+  private val prefs by lazy { mutableSetOf<ObsPref<*>>() }
 
   override fun delete() {
 	prefNode.delete()
