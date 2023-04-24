@@ -1,5 +1,5 @@
 {
-  "type" :         "matt.mstruct.bj.MultiPlatformModule",
+  "type" :         "MultiPlatformModule",
   "jvm" :          {},
   "dependencies" : [
 	{
