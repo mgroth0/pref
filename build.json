@@ -2,11 +2,7 @@
   "type" :         "MultiPlatformModule",
   "jvm" :          {},
   "dependencies" : [
-	{
-	  "type" : "Lib",
-	  "cfg" :  "commonMainApi",
-	  "key" :  "kt-stdlib"
-	},
+
 	{
 	  "type" : "Project",
 	  "cfg" :  "jvmMainApi",
