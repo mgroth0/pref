@@ -1,12 +1,17 @@
 {
-  "type" :         "MultiPlatformModule",
-  "jvm" :          {},
-  "dependencies" : [
-
-	{
-	  "type" : "Project",
-	  "cfg" :  "jvmMainApi",
-	  "path" : ":k:obs"
-	}
-  ]
+    "type": "MultiPlatformModule",
+    "dependencies": [
+        {
+            "type": "Project",
+            "cfg": "jvmMainApi",
+            "path": ":k:obs"
+        },
+        {
+            "type": "Project",
+            "cfg": "jvmTestImplementation",
+            "path": ":k:test"
+        }
+    ],
+    "jvm": {
+    }
 }
