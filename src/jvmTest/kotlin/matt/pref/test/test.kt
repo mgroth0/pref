@@ -2,7 +2,7 @@ package matt.pref.test
 
 
 import matt.pref.safepref.SafePref
-import matt.test.JupiterTestAssertions.assertRunsInOneMinute
+import matt.test.assertions.JupiterTestAssertions.assertRunsInOneMinute
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
