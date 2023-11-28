@@ -27,6 +27,10 @@ abstract class ObsPrefNode(
 ) : PrefNodeBase() {
 
     constructor(key: PrefDomain) : this(key.key)
+    constructor(
+        key: PrefDomain,
+        json: Json
+    ) : this(key.key, json = json)
 
     init {
         namedThread("ObsPrefNode init Thread", isDaemon = true) {
