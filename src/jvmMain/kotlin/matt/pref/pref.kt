@@ -33,9 +33,9 @@ open class PrefNode(
     //	)
     //  }
 
-    override fun toString() = "${this::class.simpleName}[key=$key]"
+    final override fun toString() = "${this::class.simpleName}[key=$key]"
 
-    override fun delete() {
+    final override fun delete() {
         prefs.removeNode()
         prefs.flush()
         println("deleted $this")
@@ -47,28 +47,26 @@ open class PrefNode(
         }
     }
 
-    protected inline fun <reified T : Any> obj(defaultValue: T? = null) =
-        ObjPrefProvider(serializer<T>(), defaultValue)
+    protected inline fun <reified T : Any> obj(defaultValue: T? = null) = ObjPrefProvider(serializer<T>(), defaultValue)
 
-    override fun string(defaultValue: String?) = provider { StringPref(defaultValue, it) }
-    override fun int(defaultValue: Int?) = provider { IntPref(defaultValue, it) }
-    override fun bool(defaultValue: Boolean?) = provider { BoolPref(defaultValue, it) }
+    final override fun string(defaultValue: String?) = provider { StringPref(defaultValue, it) }
+    final override fun int(defaultValue: Int?) = provider { IntPref(defaultValue, it) }
+    final override fun bool(defaultValue: Boolean?) = provider { BoolPref(defaultValue, it) }
 
 
     abstract inner class Pref<T>(
         val name: String? = null,
         protected val defaultValue: T? = null
-    ) :
-        ReadWriteProperty<Any?, T?> {
+    ) : ReadWriteProperty<Any?, T?> {
         /*i use my own implementation of defaults because java's implementation seems confusing*/
-        override operator fun getValue(
+        final override operator fun getValue(
             thisRef: Any?,
             property: KProperty<*>
         ) = if (name!! !in prefs.keys) defaultValue else getFromNode()
 
         abstract fun getFromNode(): T?
         abstract fun putIntoNode(t: T)
-        override operator fun setValue(
+        final override operator fun setValue(
             thisRef: Any?,
             property: KProperty<*>,
             value: T?
@@ -107,9 +105,8 @@ open class PrefNode(
         fun putIntoNode(
             t: T,
             silent: Boolean = false
-        ) =
-            prefs.put(name!!, json.encodeToString(ser, t))
-                .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+        ) = prefs.put(name!!, json.encodeToString(ser, t))
+            .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
     }
 
     inner class ObjPrefProvider<T : Any>(
@@ -136,16 +133,14 @@ open class PrefNode(
             defaultValue
         }
 
-        override fun putIntoNode(t: T) =
-            prefs.put(name!!, json.encodeToString(ser, t))
-                .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+        override fun putIntoNode(t: T) = prefs.put(name!!, json.encodeToString(ser, t))
+            .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
     }
 
     inner class StringPref(
         defaultValue: String? = null,
         name: String? = null
-    ) :
-        Pref<String>(name = name, defaultValue = defaultValue) {
+    ) : Pref<String>(name = name, defaultValue = defaultValue) {
         override fun getFromNode(): String? = prefs.get(name, defaultValue)
         override fun putIntoNode(t: String) = prefs.put(name!!, t)
     }
@@ -153,8 +148,7 @@ open class PrefNode(
     inner class IntPref(
         defaultValue: Int? = null,
         name: String? = null
-    ) :
-        Pref<Int>(name = name, defaultValue = defaultValue) {
+    ) : Pref<Int>(name = name, defaultValue = defaultValue) {
         override fun getFromNode() = prefs.getInt(name, defaultValue ?: 0)
         override fun putIntoNode(t: Int) = prefs.putInt(name!!, t)
     }
@@ -162,8 +156,7 @@ open class PrefNode(
     inner class BoolPref(
         defaultValue: Boolean? = null,
         name: String? = null
-    ) :
-        Pref<Boolean>(name = name, defaultValue = defaultValue) {
+    ) : Pref<Boolean>(name = name, defaultValue = defaultValue) {
         override fun getFromNode() = prefs.getBoolean(name, defaultValue ?: false)
         override fun putIntoNode(t: Boolean) {
             prefs.putBoolean(name!!, t)

@@ -58,15 +58,15 @@ abstract class ObsPrefNode(
     protected inline fun <reified T : MObservable> obsObj(noinline defaultValue: () -> T) =
         ObsObjObsPrefProvider(serializer<T>(), defaultValue)
 
-    override fun string(defaultValue: String?) = StringObsPrefProvider(defaultValue)
-    override fun int(defaultValue: Int?) = IntObsPrefProvider(defaultValue)
-    override fun bool(defaultValue: Boolean?) = BoolObsPrefProvider(defaultValue)
+    final override fun string(defaultValue: String?) = StringObsPrefProvider(defaultValue)
+    final override fun int(defaultValue: Int?) = IntObsPrefProvider(defaultValue)
+    final override fun bool(defaultValue: Boolean?) = BoolObsPrefProvider(defaultValue)
 
     private val prefNode by lazy { PrefNode(key, oldKeys, json) }
 
     private val prefs by lazy { mutableSetOf<ObsPref<*>>() }
 
-    override fun delete() {
+    final override fun delete() {
         prefNode.delete()
         prefs.forEach {
             it.reset()
@@ -170,8 +170,7 @@ abstract class ObsPrefNode(
         defaultValue: T? = null,
         key: String,
         silent: Boolean
-    ) :
-        ObsPref<T>() {
+    ) : ObsPref<T>() {
         override var pref by prefNode.ObjPref(ser, defaultValue, key, silent = silent)
     }
 
