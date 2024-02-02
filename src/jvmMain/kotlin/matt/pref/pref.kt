@@ -72,7 +72,7 @@ open class PrefNode(
             value: T?
         ) {
             if (value == null) {
-                prefs.remove(name!!).also { println("removed pref ${prefs}..${name}") }
+                prefs.remove(name!!).also { println("removed pref $prefs..$name") }
             } else putIntoNode(value)
             prefs.flush()
         }
@@ -106,7 +106,7 @@ open class PrefNode(
             t: T,
             silent: Boolean = false
         ) = prefs.put(name!!, json.encodeToString(ser, t))
-            .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+            .also { if (!silent) println("set pref $prefs..$name=$t") }
     }
 
     inner class ObjPrefProvider<T : Any>(
@@ -134,7 +134,7 @@ open class PrefNode(
         }
 
         override fun putIntoNode(t: T) = prefs.put(name!!, json.encodeToString(ser, t))
-            .also { if (!silent) println("set pref ${prefs}..${name}=${t}") }
+            .also { if (!silent) println("set pref $prefs..$name=$t") }
     }
 
     inner class StringPref(
