@@ -4,8 +4,8 @@ import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import matt.async.thread.namedThread
-import matt.obs.MObservable
-import matt.obs.prop.BindableProperty
+import matt.obs.common.MObservable
+import matt.obs.prop.writable.BindableProperty
 import matt.pref.PrefNode
 import matt.pref.PrefNodeBase
 import java.util.prefs.Preferences
@@ -48,12 +48,6 @@ abstract class ObsPrefNode(
         silent: Boolean = false
     ) = ObjObsPrefProvider(serializer<T>(), defaultValue, silent = silent)
 
-//    protected fun <T : Any> objNoInline(
-//        cls: KClass<T>,
-//        defaultValue: T? = null,
-//        silent: Boolean = false,
-//    ) =
-//        ObjObsPrefProvider(cls.serializer(), defaultValue, silent = silent)
 
     protected inline fun <reified T : MObservable> obsObj(noinline defaultValue: () -> T) =
         ObsObjObsPrefProvider(serializer<T>(), defaultValue)
@@ -117,7 +111,7 @@ abstract class ObsPrefNode(
 
         private val thePref = prefNode.ObsObjPref(ser, defaultValue, key)
         private val obsObj by lazy {
-            thePref.get().apply {
+            thePref.get()!!.apply {
                 observe {
                     println("saving ObsObjobsPref")
                     save()
@@ -133,9 +127,11 @@ abstract class ObsPrefNode(
                 save()
               }
               pref
-            }*/
+            }
 
-        /*init {
+
+
+        init {
 
           obsObj
         }*/

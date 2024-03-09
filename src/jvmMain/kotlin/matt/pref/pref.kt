@@ -5,8 +5,8 @@ import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
 import matt.lang.delegation.provider
-import matt.log.warn.warn
-import matt.model.code.errreport.printReport
+import matt.log.warn.common.warn
+import matt.model.code.errreport.common.printReport
 import matt.model.obj.del.Deletable
 import matt.pref.safepref.SafePref
 import kotlin.properties.ReadWriteProperty
@@ -27,11 +27,6 @@ open class PrefNode(
 
     private val prefs = SafePref(key)
 
-    //  private val myStr by lazy {
-    //	toStringBuilder(
-    //	  "key" to key
-    //	)
-    //  }
 
     final override fun toString() = "${this::class.simpleName}[key=$key]"
 
@@ -55,14 +50,14 @@ open class PrefNode(
 
 
     abstract inner class Pref<T>(
-        val name: String? = null,
+        val name: String,
         protected val defaultValue: T? = null
     ) : ReadWriteProperty<Any?, T?> {
         /*i use my own implementation of defaults because java's implementation seems confusing*/
         final override operator fun getValue(
             thisRef: Any?,
             property: KProperty<*>
-        ) = if (name!! !in prefs.keys) defaultValue else getFromNode()
+        ) = if (name !in prefs.keys) defaultValue else getFromNode()
 
         abstract fun getFromNode(): T?
         abstract fun putIntoNode(t: T)
@@ -72,7 +67,7 @@ open class PrefNode(
             value: T?
         ) {
             if (value == null) {
-                prefs.remove(name!!).also { println("removed pref $prefs..$name") }
+                prefs.remove(name).also { println("removed pref $prefs..$name") }
             } else putIntoNode(value)
             prefs.flush()
         }
@@ -81,37 +76,40 @@ open class PrefNode(
     inner class ObsObjPref<T : Any>(
         private val ser: KSerializer<T>,
         val defaultValue: () -> T,
-        val name: String? = null
+        val name: String
     ) {
 
-        fun get() = if (name!! !in prefs.keys) {
-            defaultValue()
-        } else getFromNode()
+        fun get() =
+            if (name !in prefs.keys) {
+                defaultValue()
+            } else getFromNode()
 
         operator fun getValue(
             thisRef: Any?,
             property: KProperty<*>
-        ): T = get()
+        ): T = get()!!
 
 
-        fun getFromNode() = try {
-            json.decodeFromString(ser, prefs.get(name, null))
-        } catch (e: SerializationException) {
-            warn("got $e when trying to load preference node \"$name\"")
-            e.printReport()
-            defaultValue()
-        }
+        fun getFromNode() =
+            try {
+                val strOrNull =  prefs.get(name, null)
+                strOrNull?.let { json.decodeFromString(ser, it) }
+            } catch (e: SerializationException) {
+                warn("got $e when trying to load preference node \"$name\"")
+                e.printReport()
+                defaultValue()
+            }
 
         fun putIntoNode(
             t: T,
             silent: Boolean = false
-        ) = prefs.put(name!!, json.encodeToString(ser, t))
+        ) = prefs.put(name, json.encodeToString(ser, t))
             .also { if (!silent) println("set pref $prefs..$name=$t") }
     }
 
     inner class ObjPrefProvider<T : Any>(
         private val ser: KSerializer<T>,
-        private val defaultValue: T? = null,
+        private val defaultValue: T? = null
     ) {
         operator fun provideDelegate(
             thisRef: Any?,
@@ -122,44 +120,46 @@ open class PrefNode(
     inner class ObjPref<T : Any>(
         private val ser: KSerializer<T>,
         defaultValue: T? = null,
-        name: String? = null,
+        name: String,
         val silent: Boolean
     ) : Pref<T>(name = name, defaultValue = defaultValue) {
-        override fun getFromNode() = try {
-            json.decodeFromString(ser, prefs.get(name, null))
-        } catch (e: SerializationException) {
-            warn("got $e when trying to load preference node \"$name\"")
-            e.printReport()
-            defaultValue
-        }
+        override fun getFromNode() =
+            try {
+                json.decodeFromString(ser, prefs.get(name, null)!!)
+            } catch (e: SerializationException) {
+                warn("got $e when trying to load preference node \"$name\"")
+                e.printReport()
+                defaultValue
+            }
 
-        override fun putIntoNode(t: T) = prefs.put(name!!, json.encodeToString(ser, t))
-            .also { if (!silent) println("set pref $prefs..$name=$t") }
+        override fun putIntoNode(t: T) =
+            prefs.put(name, json.encodeToString(ser, t))
+                .also { if (!silent) println("set pref $prefs..$name=$t") }
     }
 
     inner class StringPref(
         defaultValue: String? = null,
-        name: String? = null
+        name: String
     ) : Pref<String>(name = name, defaultValue = defaultValue) {
         override fun getFromNode(): String? = prefs.get(name, defaultValue)
-        override fun putIntoNode(t: String) = prefs.put(name!!, t)
+        override fun putIntoNode(t: String) = prefs.put(name, t)
     }
 
     inner class IntPref(
         defaultValue: Int? = null,
-        name: String? = null
+        name: String
     ) : Pref<Int>(name = name, defaultValue = defaultValue) {
         override fun getFromNode() = prefs.getInt(name, defaultValue ?: 0)
-        override fun putIntoNode(t: Int) = prefs.putInt(name!!, t)
+        override fun putIntoNode(t: Int) = prefs.putInt(name, t)
     }
 
     inner class BoolPref(
         defaultValue: Boolean? = null,
-        name: String? = null
+        name: String
     ) : Pref<Boolean>(name = name, defaultValue = defaultValue) {
         override fun getFromNode() = prefs.getBoolean(name, defaultValue ?: false)
         override fun putIntoNode(t: Boolean) {
-            prefs.putBoolean(name!!, t)
+            prefs.putBoolean(name, t)
         }
     }
 }

@@ -22,25 +22,26 @@ class SafePref(val key: String) {
             }
         }
 
-    fun get(name: String?, default: String?) = prefs.get(name, default)
-    fun put(name: String?, value: String) = prefs.put(name, value)
+    fun get(name: String, default: String?): String? = prefs.get(name, default)
+    fun put(name: String, value: String) = prefs.put(name, value)
 
-    fun getInt(name: String?, default: Int) = prefs.getInt(name, default)
-    fun putInt(name: String?, value: Int) = prefs.putInt(name, value)
+    fun getInt(name: String, default: Int) = prefs.getInt(name, default)
+    fun putInt(name: String, value: Int) = prefs.putInt(name, value)
 
-    fun getBoolean(name: String?, default: Boolean) = prefs.getBoolean(name, default)
-    fun putBoolean(name: String?, value: Boolean) = prefs.putBoolean(name, value)
+    fun getBoolean(name: String, default: Boolean) = prefs.getBoolean(name, default)
+    fun putBoolean(name: String, value: Boolean) = prefs.putBoolean(name, value)
 
     fun removeNode() = prefs.removeNode()
     fun flush() = prefs.flush()
     fun remove(key: String) = prefs.remove(key)
 
-    inline fun <reified R> getReified(name: String, default: R): R = when (default) {
-        is String? -> get(name, default)
-        is Int     -> getInt(name, default)
-        is Boolean -> getBoolean(name, default)
-        else       -> error("tried to get $default from pref node?")
-    } as R
+    inline fun <reified R> getReified(name: String, default: R): R =
+        when (default) {
+            is String -> get(name, default)
+            is Int     -> getInt(name, default)
+            is Boolean -> getBoolean(name, default)
+            else       -> error("tried to get $default from pref node?")
+        } as R
 
     inline fun <reified R> putBool(name: String, value: R) {
         when (value) {
